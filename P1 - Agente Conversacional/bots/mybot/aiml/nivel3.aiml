@@ -1,0 +1,769 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<aiml version="2.0">
+
+<category>
+<pattern>Reproduce (la serie) <set>series</set></pattern>
+<template>
+	<think><set name = "reproduciendo"><star/></set></think>
+    Ok, eres Carlos o Marta?
+</template>
+</category>
+
+<category>
+<pattern>Reproduce (la serie) *</pattern>
+<template>Serie no registrada, prueba a anadirla</template>
+</category>
+
+<category>
+<pattern>^ <set>usuarios</set></pattern>
+<that>Ok, eres Carlos o Marta</that>
+<template>
+	<think>
+		<set var = "reproducir"><map><name><star index = "2"/></name><get name = "reproduciendo"/></map></set>
+		<set name = "usuario"><star index = "2"/></set>
+        <set name = "estanjuntos">no</set>
+
+        <condition name = "usuario">
+            <li value = "Carlos">
+                <set name = "otro">Marta</set>
+            </li>
+
+            <li value = "Marta">
+                <set name = "otro">Carlos</set>
+            </li>
+        </condition>
+	</think>
+	<condition var = "reproducir">
+		<li value = "unknown">
+			<addtomap><name><star index = "2"/></name><key><get name = "reproduciendo"/></key><value>s1e1 0 espanol desactivado</value></addtomap>
+		</li>
+	</condition>
+	<think>
+		<set var = "indice"><srai>SELECTITEM 1 IN <map><name><star index = "2"/></name><get name = "reproduciendo"/></map></srai></set>
+		<set var = "minuto"><srai>SELECTITEM 2 IN <map><name><star index = "2"/></name><get name = "reproduciendo"/></map></srai></set>
+		<set var = "deletreo"><srai>deletrea <get var = "indice"/></srai></set>
+		<set var = "capitulo"><srai>SELECTITEM 4 IN <get var = "deletreo"/></srai></set>
+		<set var = "temporada"><srai>SELECTITEM 2 IN <get var = "deletreo"/></srai></set>
+	</think>
+    Reproduciendo "<srai>decode <srai>SELECTITEM 1 IN <map><name><get name = "reproduciendo"/></name><get var = "indice"/></map></srai></srai>", el capitulo <get var = "capitulo"/> de la temporada <get var = "temporada"/> de <get name = "reproduciendo"/> por el minuto <get var = "minuto"/>, <condition var = "minuto"><li value = "0">empezando la serie</li><li>donde lo dejaste la ultima vez</li></condition>
+</template>
+</category>
+
+<category>
+<pattern>^ *</pattern>
+<that>Ok, eres Carlos o Marta</that>
+<template><think><set name = "reproduciendo">unknown</set></think>Usuario no registrado en el sistema</template>
+</category>
+
+<category>
+<pattern>Reproduce el siguiente ^</pattern>
+<that>El tiempo total transcurrido es de * minutos Capitulo en reproduccion terminado</that>
+<that>El capitulo en reproduccion ha terminado</that>
+<that>Se ha avanzado * minutos la reproduccion Capitulo en reproduccion terminado</that>
+<template>
+	<think>
+		<set var = "clavecap"><srai>SELECTITEM 1 IN <map><name><get name = "usuario"/></name><get name = "reproduciendo"/></map></srai></set>
+		<set var = "deletreo"><srai>deletrea <get var = "clavecap"/></srai></set>
+		<set var = "cap"><map name = "successor"><srai>SELECTITEM 4 IN <get var = "deletreo"/></srai></map></set>
+		<set var = "season"><srai>SELECTITEM 2 IN <get var = "deletreo"/></srai></set>
+		<set var = "clavecap">s<get var = "season"/>e<get var = "cap"/></set>
+		<set var = "titulo"><srai>decode <srai>SELECTITEM 1 IN <map><name><get name = "reproduciendo"/></name><get var = "clavecap"/></map></srai></srai></set>
+
+		<condition var = "titulo">
+			<li value = "unknown">
+				<set var = "season"><map name = "successor"><get var = "season"/></map></set>
+				<set var = "cap">1</set>
+				<set var = "clavecap">s<get var = "season"/>e<get var = "cap"/></set>
+			</li>
+		</condition>
+
+		<set var = "titulo"><srai>decode <srai>SELECTITEM 1 IN <map><name><get name = "reproduciendo"/></name><get var = "clavecap"/></map></srai></srai></set>
+		
+		<condition var = "titulo">
+			<li value = "unknown">
+				<set var = "solucion">Has acabado la serie</set>
+
+                <condition name = "estanjuntos">
+                    <li value = "si">
+                        <removefrommap>
+                        <name><get name = "otro"/></name>
+                        <key><get name = "reproduciendo"/></key>
+                        </removefrommap>
+                    </li>
+                </condition>
+
+				<removefrommap>
+					<name><get name = "usuario"/></name>
+					<key><get name = "reproduciendo"/></key>
+				</removefrommap>
+			</li>
+			<li>
+                <set var = "idioma"><srai>SELECTITEM 3 IN <map><name><get name = "usuario"/></name><get name = "reproduciendo"/></map></srai></set>
+                <set var = "subtitulos"><srai>SELECTITEM 4 IN <map><name><get name = "usuario"/></name><get name = "reproduciendo"/></map></srai></set>
+
+                <condition name = "estanjuntos">
+                    <li value = "si">
+                        <modifymap>
+                            <name><get name = "otro"/></name>
+                            <key><get name = "reproduciendo"/></key>
+                            <value><get var ="clavecap"/> 0 <get var = "idioma"/> <get var = "subtitulos"/></value>
+                        </modifymap>
+                    </li>
+                </condition>
+
+				<modifymap>
+					<name><get name = "usuario"/></name>
+					<key><get name = "reproduciendo"/></key>
+					<value><get var ="clavecap"/> 0 <get var = "idioma"/> <get var = "subtitulos"/></value>
+				</modifymap>
+				<set var = "solucion">Reproduciendo "<get var = "titulo"/>", el capitulo <get var = "cap"/> de la temporada <get var = "season"/> de <get name = "reproduciendo"/> por el minuto 0</set>
+			</li>
+		</condition>
+	</think>
+	<get var = "solucion"/>
+</template>
+</category>
+
+<category>
+<pattern>Pon el minuto <set>number</set></pattern>
+<template>
+	<think>
+        <condition name = "reproduciendo">
+            <li value = "unknown">
+                <set var = "solucion">No se esta reproduciendo nada</set>
+            </li>
+
+            <li>
+        		<set var = "clavecap"><srai>SELECTITEM 1 IN <map><name><get name = "usuario"/></name><get name = "reproduciendo"/></map></srai></set>
+        		<set var = "minuto"><star/></set>
+        		<set var = "maximo"><srai>SELECTITEM 2 IN <map><name><get name = "reproduciendo"/></name><get var = "clavecap"/></map></srai></set>
+        		<set var = "contador">1</set>
+        		<set var = "listaminutos">0</set>
+
+        		<condition var = "minuto">
+        			<li><value><get var = "maximo"/></value>
+        				<set  var = "solucion">El capitulo en reproduccion ha terminado</set>
+        			</li>
+        			<li>
+        				<condition var = "contador">
+        					<li><value><get var = "maximo"/></value></li>
+
+        					<li>
+        						<set var = "listaminutos"><get var = "listaminutos"/> <get var = "contador"/></set>
+        						<set var = "contador"><map name = "successor"><get var = "contador"/></map></set>
+        						<loop/>
+        					</li>
+        				</condition>
+
+        				<set var = "posicion"><srai>FINDITEM <get var = "minuto"/> IN <get var = "listaminutos"/></srai></set>
+
+        				<condition var = "posicion">
+        					<li value = "0">
+        						<set var = "solucion">Este capitulo solo dura <get var = "maximo"/> minutos</set>
+        					</li>
+
+        					<li>
+                                <set var = "idioma"><srai>SELECTITEM 3 IN <map><name><get name = "usuario"/></name><get name = "reproduciendo"/></map></srai></set>
+                                <set var = "subtitulos"><srai>SELECTITEM 4 IN <map><name><get name = "usuario"/></name><get name = "reproduciendo"/></map></srai></set>
+
+                                <condition name = "estanjuntos">
+                                    <li value = "si">
+                                        <modifymap>
+                                            <name><get name ="otro"/></name>
+                                            <key><get name = "reproduciendo"/></key>
+                                            <value><get var = "clavecap"/> <get var = "minuto"/> <get var = "idioma"/> <get var = "subtitulos"/></value>
+                                        </modifymap>
+                                    </li>
+                                </condition>
+
+        						<modifymap>
+        							<name><get name ="usuario"/></name>
+        							<key><get name = "reproduciendo"/></key>
+        							<value><get var = "clavecap"/> <get var = "minuto"/> <get var = "idioma"/> <get var = "subtitulos"/></value>
+        						</modifymap>
+        						<set var = "solucion">Capitulo actual reproduciendose en el minuto <get var = "minuto"/></set>
+        					</li>
+        				</condition>
+        			</li>
+        		</condition>
+            </li>
+        </condition>
+	</think>
+	<get var = "solucion"/>
+</template>
+</category>
+
+<category>
+<pattern>Avanza (la reproduccion) <set>number</set> minutos</pattern>
+<template>
+	<think>
+        <condition name = "reproduciendo">
+            <li value = "unknown">
+                <set var = "solucion">No se esta reproduciendo nada</set>
+            </li>
+
+            <li>
+        		<set var = "clavecap"><srai>SELECTITEM 1 IN <map><name><get name = "usuario"/></name><get name = "reproduciendo"/></map></srai></set>
+        		<set var = "minutoactual"><srai>SELECTITEM 2 IN <map><name><get name = "usuario"/></name><get name = "reproduciendo"/></map></srai></set>
+        		<set var = "maximo"><srai>SELECTITEM 2 IN <map><name><get name = "reproduciendo"/></name><get var = "clavecap"/></map></srai></set>
+        		<set var = "listaaceptados">1</set>
+        		<set var = "contador">1</set>
+        		<set var = "adelantar"><star/></set>
+        		<set var = "iterador"><get var = "minutoactual"/></set>
+
+        		<condition var = "iterador">
+        			<li><value><get var = "maximo"/></value></li>
+
+        			<li>
+        				<set var = "listaaceptados"><get var = "listaaceptados"/> <get var = "contador"/></set>
+        				<set var = "iterador"><map name = "successor"><get var = "iterador"/></map></set>
+        				<set var = "contador"><map name = "successor"><get var = "contador"/></map></set>
+        				<loop/>
+        			</li>
+        		</condition>
+
+        		<set var = "posicion"><srai>FINDITEM <get var = "adelantar"/> IN <get var = "listaaceptados"/></srai></set>
+
+        		<condition var = "posicion">
+        			<li value = "0"><set var = "solucion">No se puede avanzar <star/> minutos</set></li>
+
+        			<li>
+        				<condition var = "adelantar">
+        					<li value = "0">
+                                <set var = "idioma"><srai>SELECTITEM 3 IN <map><name><get name = "usuario"/></name><get name = "reproduciendo"/></map></srai></set>
+                                <set var = "subtitulos"><srai>SELECTITEM 3 IN <map><name><get name = "usuario"/></name><get name = "reproduciendo"/></map></srai></set>
+                                <condition name = "estanjuntos">
+                                    <li value = "si">
+                                        <modifymap>
+                                            <name><get name = "otro"/></name>
+                                            <key><get name = "reproduciendo"/></key>
+                                            <value><get var = "clavecap"/> <get var = "minutoactual"/> <get var = "idioma"/> <get var = "subtitulos"/></value>
+                                        </modifymap>
+                                    </li>
+                                </condition>
+
+        						<modifymap>
+        							<name><get name = "usuario"/></name>
+        							<key><get name = "reproduciendo"/></key>
+        							<value><get var = "clavecap"/> <get var = "minutoactual"/> <get var = "idioma"/> <get var = "subtitulos"/></value>
+        						</modifymap>
+        						<set var = "solucion">Se ha avanzado <star/> minutos la reproduccion del capitulo actual va por el minuto <get var = "minutoactual"/></set>
+        					</li>
+
+        					<li>
+        						<set var = "minutoactual"><map name = "successor"><get var = "minutoactual"/></map></set>
+        						<set var = "adelantar"><map name = "predecessor"><get var = "adelantar"/></map></set>
+        						<loop/>
+        					</li>
+        				</condition>
+        			</li>
+        		</condition>
+
+        		<condition var = "minutoactual">
+        			<li><value><get var = "maximo"/></value>
+        				<set var = "solucion">Se ha avanzado <star/> minutos la reproduccion Capitulo en reproduccion terminado</set>
+        			</li>
+        		</condition>
+            </li>
+        </condition>
+	</think>
+	<get var = "solucion"/>
+</template>
+</category>
+
+<category>
+<pattern>Retrocede (la reproduccion) <set>number</set> minutos</pattern>
+<template>
+	<think>
+        <condition name = "reproduciendo">
+            <li value = "unknown">
+                <set var = "solucion">No se esta reproduciendo nada</set>                
+            </li>
+
+            <li>
+        		<set var = "clavecap"><srai>SELECTITEM 1 IN <map><name><get name = "usuario"/></name><get name = "reproduciendo"/></map></srai></set>
+        		<set var = "minutoactual"><srai>SELECTITEM 2 IN <map><name><get name = "usuario"/></name><get name = "reproduciendo"/></map></srai></set>
+        		<set var = "listaaceptados">1</set>
+        		<set var = "contador">1</set>
+        		<set var = "retrasar"><star/></set>
+
+        		<condition var = "contador">
+        			<li><value><get var = "minutoactual"/></value></li>
+
+        			<li>
+        				<set var = "listaaceptados"><get var = "listaaceptados"/> <get var = "contador"/></set>
+        				<set var = "contador"><map name = "successor"><get var = "contador"/></map></set>
+        				<loop/>
+        			</li>
+        		</condition>
+
+        		<set var = "posicion"><srai>FINDITEM <get var = "retrasar"/> IN <get var = "listaaceptados"/></srai></set>
+
+        		<condition var = "posicion">
+        			<li value = "0"><set var = "solucion">No se puede retroceder <star/> minutos</set></li>
+
+        			<li>
+        				<condition var = "retrasar">
+        					<li value = "0">
+                                <set var = "idioma"><srai>SELECTITEM 3 IN <map><name><get name = "usuario"/></name><get name = "reproduciendo"/></map></srai></set>
+                                <set var = "subtitulos"><srai>SELECTITEM 4 IN <map><name><get name = "usuario"/></name><get name = "reproduciendo"/></map></srai></set>
+
+                                <condition name = "estanjuntos">
+                                    <li value = "si">
+                                        <modifymap>
+                                            <name><get name = "otro"/></name>
+                                            <key><get name = "reproduciendo"/></key>
+                                            <value><get var = "clavecap"/> <get var = "minutoactual"/> <get var = "idioma"/> <get var = "subtitulos"/></value>
+                                        </modifymap>
+                                    </li>
+                                </condition>
+
+        						<modifymap>
+        							<name><get name = "usuario"/></name>
+        							<key><get name = "reproduciendo"/></key>
+        							<value><get var = "clavecap"/> <get var = "minutoactual"/> <get var = "idioma"/> <get var = "subtitulos"/></value>
+        						</modifymap>
+        						<set var = "solucion">Se ha retrocedido <star/> minutos la reproduccion del capitulo actual va por el minuto <get var = "minutoactual"/></set>
+        					</li>
+
+        					<li>
+        						<set var = "minutoactual"><map name = "predecessor"><get var = "minutoactual"/></map></set>
+        						<set var = "retrasar"><map name = "predecessor"><get var = "retrasar"/></map></set>
+        						<loop/>
+        					</li>
+        				</condition>
+        			</li>
+        		</condition>
+            </li>
+        </condition>
+	</think>
+	<get var = "solucion"/>
+</template>
+</category>
+
+
+<!--Si se pausa se puede avanzar y retrasar la reproduccion además de poner un minuto concreto, pero si se usa simul, el tiempo de reproduccion sigue igual-->
+<category>
+<pattern>Pausa (la reproduccion)</pattern>
+<template>
+    <think>
+        <condition name = "reproduciendo">
+            <li value = "unknown">
+                <set var = "solucion">No se esta reproduciendo nada</set>
+            </li>
+
+            <li>
+                <condition name = "pausado">
+                	<li value = "unknown">
+                		<set name = "pausado">1</set>
+                		<set var = "solucion">Reproduccion pausada</set>
+                	</li>
+
+                	<li value = "1">
+                		<set var = "solucion">La reproduccion ya esta pausada</set>
+                	</li>
+
+                	<li value = "0">
+                		<set name = "pausado">1</set>
+                		<set var = "solucion">Reproduccion pausada</set>
+                	</li>
+                </condition>
+            </li>
+        </condition>
+    </think>
+    <get var = "solucion"/>
+</template>
+</category>
+
+<category>
+<pattern>Reanuda (la reproduccion)</pattern>
+<template>
+    <think>
+        <condition name = "reproduciendo">
+            <li value = "unknown">
+                <set var = "solucion">No se esta reproduciendo nada</set>
+            </li>
+
+            <li>
+                <condition name = "pausado">
+                	<li value = "unknown">
+                		<set name = "pausado">0</set>
+                		<set var = "solucion">La reproduccion no esta pausada</set>
+                	</li>
+
+                	<li value = "1">
+                		<set name = "pausado">0</set>
+                		<set var = "solucion">Reproduccion reanudada</set>
+                	</li>
+
+                	<li value = "0">
+                		<set name = "pausado">0</set>
+                		<set var = "solucion">La reproduccion no esta pausada</set>
+                	</li>
+                </condition>
+            </li>
+        </condition>
+    </think>
+    <get var = "solucion"/>
+</template>
+</category>
+
+<category>
+<pattern>Cierra (la reproduccion)</pattern>
+<template>
+    <think>
+        <condition name = "reproduciendo">
+        	<li value = "unknown">
+        		<set var = "solucion">No hay nada reproduciendo</set>
+        	</li>
+
+        	<li>
+        		<set name = "reproduciendo">unknown</set>
+        		<set name = "usuario">unknown</set>
+                <set name = "estanjuntos">no</set>
+        		<set var = "solucion">Aplicacion cerrada</set>
+        	</li>
+        </condition>
+    </think>
+    <get var = "solucion"/>
+</template>
+</category>
+
+<category>
+<pattern><set>activa</set> los subtitulos en <set>idiomas</set></pattern>
+<template>
+    <think>
+        <condition name = "reproduciendo">
+            <li value = "unknown">
+                <set var = "solucion">No se esta reproduciendo nada</set>
+            </li>
+
+            <li>
+            	<set var = "clavecap"><srai>SELECTITEM 1 IN <map><name><get name = "usuario"/></name><get name = "reproduciendo"/></map></srai></set>
+            	<set var = "subtitulos"><srai>SELECTITEM 4 IN <map><name><get name = "usuario"/></name><get name = "reproduciendo"/></map></srai></set>
+
+            	<condition var = "subtitulos">
+            		<li><value><star index = "2"/></value>
+            			<set var = "solucion">Esta serie ya tiene los subtitulos activados en <star index = "2"/></set>
+            		</li>
+
+            		<li>
+        		    	<set var = "clavecap"><srai>SELECTITEM 1 IN <map><name><get name = "usuario"/></name><get name = "reproduciendo"/></map></srai></set>
+        				<set var = "minutoactual"><srai>SELECTITEM 2 IN <map><name><get name = "usuario"/></name><get name = "reproduciendo"/></map></srai></set>
+        				<set var = "idioma"><srai>SELECTITEM 3 IN <map><name><get name = "usuario"/></name><get name = "reproduciendo"/></map></srai></set>
+        		    	<set var = "estasubtitulado"><srai><get name = "reproduciendo"/> esta subtitulada en <star index = "2"/></srai></set>
+
+        		        <condition var = "estasubtitulado">
+        		        	<li><value>Si, <get name = "reproduciendo"/> esta subtitulada en <star index = "2"/></value>
+
+                                <condition name = "estanjuntos">
+                                    <li value = "si">
+                                        <modifymap>
+                                            <name><get name = "otro"/></name>
+                                            <key><get name = "reproduciendo"/></key>
+                                            <value><get var = "clavecap"/> <get var = "minutoactual"/> <get var = "idioma"/> <star index = "2"/></value>
+                                        </modifymap>
+                                    </li>
+                                </condition>
+
+        		        		<modifymap>
+        		        			<name><get name = "usuario"/></name>
+        		        			<key><get name = "reproduciendo"/></key>
+        		        			<value><get var = "clavecap"/> <get var = "minutoactual"/> <get var = "idioma"/> <star index = "2"/></value>
+        		        		</modifymap>
+                                <set var = "solucion">Subtitulos activados en <star index = "2"/></set>
+        		        	</li>
+
+        		        	<li>
+        		        		<set var = "solucion">Esta serie no esta subtitulada en <star index = "2"/></set>
+        		        	</li>
+        		        </condition>
+        		    </li>
+                </condition>
+            </li>
+        </condition>
+    </think>
+    <get var = "solucion"/>
+</template>
+</category>
+
+<category>
+<pattern>Desactiva los subtitulos</pattern>
+<template>
+    <think>
+        <condition name = "reproduciendo">
+            <li value = "unknown">
+                <set var = "solucion">No se esta reproduciendo nada</set>
+            </li>
+
+            <li>
+                <set var = "clavecap"><srai>SELECTITEM 1 IN <map><name><get name = "usuario"/></name><get name = "reproduciendo"/></map></srai></set>
+                <set var = "subtitulos"><srai>SELECTITEM 4 IN <map><name><get name = "usuario"/></name><get name = "reproduciendo"/></map>></srai></set>
+
+                <condition var = "subtitulos">
+                    <li value = "desactivado">
+                        <set var = "solucion">Esta serie ya tiene los subtitulos desactivados</set>
+                    </li>
+
+                    <li>
+                        <set var = "clavecap"><srai>SELECTITEM 1 IN <map><name><get name = "usuario"/></name><get name = "reproduciendo"/></map></srai></set>
+                        <set var = "minutoactual"><srai>SELECTITEM 2 IN <map><name><get name = "usuario"/></name><get name = "reproduciendo"/></map></srai></set>
+                        <set var = "idioma"><srai>SELECTITEM 3 IN <map><name><get name = "usuario"/></name><get name = "reproduciendo"/></map></srai></set>
+
+                        <condition name = "estanjuntos">
+                            <li value = "si">
+                                <modifymap>
+                                    <name><get name = "otro"/></name>
+                                    <key><get name = "reproduciendo"/></key>
+                                    <value><get var = "clavecap"/> <get var = "minutoactual"/> <get var = "idioma"/> desactivado</value>
+                                </modifymap>
+                            </li>
+                        </condition>
+
+                        <modifymap>
+                            <name><get name = "usuario"/></name>
+                            <key><get name = "reproduciendo"/></key>
+                            <value><get var = "clavecap"/> <get var = "minutoactual"/> <get var = "idioma"/> desactivado</value>
+                        </modifymap>
+                        <set var = "solucion">Subtitulos desactivados</set>
+                    </li>
+                </condition>
+            </li>
+        </condition>
+    </think>
+    <get var = "solucion"/>
+</template>
+</category>
+
+<category>
+<pattern>Pon el idioma en <set>idiomas</set></pattern>
+<template>
+    <think>
+        <condition name = "reproduciendo">
+            <li value = "unknown">
+                <set var = "solucion">No se esta reproduciendo nada</set>
+            </li>
+
+            <li>
+                <set var = "clavecap"><srai>SELECTITEM 1 IN <map><name><get name = "usuario"/></name><get name = "reproduciendo"/></map></srai></set>
+                <set var = "idioma"><srai>SELECTITEM 3 IN <map><name><get name = "usuario"/></name><get name = "reproduciendo"/></map></srai></set>
+
+                <condition var = "idioma">
+                    <li><value><star/></value>
+                        <set var = "solucion">El audio ya esta en <star/></set>
+                    </li>
+
+                    <li>
+                        <set var = "clavecap"><srai>SELECTITEM 1 IN <map><name><get name = "usuario"/></name><get name = "reproduciendo"/></map></srai></set>
+                        <set var = "minutoactual"><srai>SELECTITEM 2 IN <map><name><get name = "usuario"/></name><get name = "reproduciendo"/></map></srai></set>
+                        <set var = "subtitulos"><srai>SELECTITEM 4 IN <map><name><get name = "usuario"/></name><get name = "reproduciendo"/></map></srai></set>
+                        <set var = "estaeneseidioma"><srai><get name = "reproduciendo"/> esta en <star/></srai></set>
+
+                        <condition var = "estaeneseidioma">
+                            <li><value>Si, <get name = "reproduciendo"/> esta en <star/></value>
+
+                                <condition name = "estanjuntos">
+                                    <li value = "si">
+                                        <modifymap>
+                                            <name><get name = "otro"/></name>
+                                            <key><get name = "reproduciendo"/></key>
+                                            <value><get var = "clavecap"/> <get var = "minutoactual"/> <star/> <get var = "subtitulos"/></value>
+                                        </modifymap>
+                                    </li>
+                                </condition>
+
+                                <modifymap>
+                                    <name><get name = "usuario"/></name>
+                                    <key><get name = "reproduciendo"/></key>
+                                    <value><get var = "clavecap"/> <get var = "minutoactual"/> <star/> <get var = "subtitulos"/></value>
+                                </modifymap>
+                                <set var = "solucion">Audio cambiado a <star/></set>
+                            </li>
+
+                            <li>
+                                <set var = "solucion">La serie en reproduccion no esta en <star/></set>
+                            </li>
+                        </condition>
+                    </li>
+                </condition>
+            </li>
+        </condition>
+    </think>
+    <get var = "solucion"/>
+</template>
+</category>
+
+<category>
+<pattern>Ha llegado <set>usuarios</set></pattern>
+<template>
+		<think>
+        <set name = "listacoincidentes"></set>
+        <set var = "listaseries"><lowercase><readset>series</readset></lowercase></set>
+        <set var = "iterador"><srai>TOP <get var = "listaseries"/></srai></set>
+        <set var = "listaseries"><srai>REMAIN <get var = "listaseries"/></srai></set>
+        <set var = "correccion"><map><name><get var = "iterador"/></name>serie</map></set>
+
+        <condition var = "correccion">
+        	<li value = "unknown">
+				    <set var = "iterador"><get var = "iterador"/> <srai>TOP <get var = "listaseries"/></srai></set>
+        			<set var = "listaseries"><srai>REMAIN <get var = "listaseries"/></srai></set>
+        			<set var = "correccion"><map><name><get var = "iterador"/></name>serie</map></set>		
+        		<loop/>
+        	</li>
+
+        	<li></li>
+        </condition>
+
+
+        <set var = "episodiousuario"><srai>SELECTITEM 1 IN <map><name><get name = "usuario"/></name><get var = "iterador"/></map></srai></set>
+        <set var = "episodiootro"><srai>SELECTITEM 1 IN <map><name><get name = "otro"/></name><get var = "iterador"/></map></srai></set>
+
+        <condition var = "iterador">
+            <li value = "$"></li>
+
+            <li>
+                <condition var = "episodiousuario">
+                	<li value = "unknown"></li>
+                    <li><value><get var = "episodiootro"/></value>
+                        <condition name = "listacoincidentes">
+                            <li value = "unknown">
+                                <set name = "listacoincidentes"><get var = "iterador"/></set>
+                            </li>
+
+                            <li>
+                                <set name = "listacoincidentes"><get name = "listacoincidentes"/> <get var = "iterador"/></set>
+                            </li>
+                        </condition>
+                    </li>
+                </condition>
+                <set var = "iterador"><srai>TOP <get var = "listaseries"/></srai></set>
+                <set var = "listaseries"><srai>REMAIN <get var = "listaseries"/></srai></set>
+                <set var = "episodiousuario"><srai>SELECTITEM 1 IN <map><name><get name = "usuario"/></name><get var = "iterador"/></map></srai></set>
+                <set var = "episodiootro"><srai>SELECTITEM 1 IN <map><name><get name = "otro"/></name><get var = "iterador"/></map></srai></set>
+                <loop/>
+            </li>
+        </condition>
+
+
+        <condition name = "listacoincidentes">
+            <li value = "unknown">
+                <set var = "solucion">No teneis ninguna seria en la que coincidan, continua la reproduccion de <get name = "reproduciendo"/></set>
+            </li>
+
+            <li>
+                <set name = "posible"><srai>TOP <get name = "listacoincidentes"/></srai></set>
+                <set name = "listacoincidentes"><srai>REMAIN <get name = "listacoincidentes"/></srai></set>
+                <set var = "capitulo"><srai>SELECTITEM 1 IN <map><name><get name = "usuario"/></name><get name = "posible"/></map></srai></set>
+                <set var = "durcap"><srai>SELECTITEM 2 IN <map><name><get name = "posible"/></name><get var = "capitulo"/></map></srai></set>
+                <set var = "capitulo"><srai>deletrea <get var = "capitulo"/></srai></set>
+                <set name = "episodio"><srai>SELECTITEM 4 IN <get var = "capitulo"/></srai></set>
+                <set name = "temporada"><srai>SELECTITEM 2 IN <get var = "capitulo"/></srai></set>
+                <set var = "minutousuario"><srai>SELECTITEM 2 IN <map><name><get name = "usuario"/></name><get name = "posible"/></map></srai></set>
+                <set var = "minutootro"><srai>SELECTITEM 2 IN <map><name><get name = "otro"/></name><get name = "posible"/></map></srai></set>
+                <set var = "comparacion"><srai><get var = "minutousuario"/> es mayor que <get var = "minutootro"/> siendo el maximo <get var = "durcap"/></srai></set>
+
+                <condition var = "comparacion">
+                    <li value = "si">
+                        <set name = "minuto"><get var = "minutootro"/></set>
+                        <set name = "minimo"><get name = "otro"/></set>
+                    </li>
+
+                    <li value = "no">
+                        <set name = "minuto"><get var = "minutousuario"/></set>
+                        <set name = "minimo"><get name = "usuario"/></set>
+                    </li>
+                </condition>
+
+                <set var = "solucion">El capitulo <get name = "episodio"/> de la temporada <get name = "temporada"/> de <get name = "posible"/> lo llevais por el mismo episodio, quereis que lo reproduzca por el minuto que lo dejo <get name = "minimo"/>?</set>
+            </li>
+        </condition>
+    </think>
+    <get var = "solucion"/>
+</template>
+</category>
+
+<category>
+<pattern>^ <set>afirmativo</set> ^</pattern>
+<that>El capitulo * de la temporada * de * lo llevais por el mismo episodio, quereis que lo reproduzca por el minuto que lo dejo *</that>
+<template>
+    <think>
+        <set name = "estanjuntos">si</set>
+        <set name = "reproduciendo"><get name = "posible"/></set>
+        <set var = "capitulo"><srai>SELECTITEM 1 IN <map><name><get name = "usuario"/></name><get name = "reproduciendo"/></map></srai></set>
+
+        <condition name = "minimo">
+            <li value = "Carlos">
+                <set var = "idioma"><srai>SELECTITEM 3 IN <map name = "Carlos"><get name = "reproduciendo"/></map></srai></set>
+                <set var = "subtitulos"><srai>SELECTITEM 4 IN <map name = "Carlos"><get name = "reproduciendo"/></map></srai></set>
+
+                <modifymap>
+                    <name>Marta</name>
+                    <key><get name = "reproduciendo"/></key>
+                    <value><get var = "capitulo"/> <get name = "minuto"/> <get var = "idioma"/> <get var = "subtitulos"/></value>
+                </modifymap>
+            </li>
+
+            <li value = "Marta">
+                <set var = "idioma"><srai>SELECTITEM 3 IN <map name = "Marta"><get name = "reproduciendo"/></map></srai></set>
+                <set var = "subtitulos"><srai>SELECTITEM 4 IN <map name = "Marta"><get name = "reproduciendo"/></map></srai></set>
+
+                <modifymap>
+                    <name>Carlos</name>
+                    <key><get name = "reproduciendo"/></key>
+                    <value><get var = "capitulo"/> <get name = "minuto"/> <get var = "idioma"/> <get var = "subtitulos"/></value>
+                </modifymap>
+            </li>
+        </condition>
+    </think>
+    Reproduciendo episodio <get name = "episodio"/> de la temporada <get name = "temporada"/> de <get name = "reproduciendo"/> por el minuto <get name = "minuto"/>
+</template>
+</category>
+
+<category>
+<pattern>^ no ^</pattern>
+<that>El capitulo * de la temporada * de * lo llevais por el mismo episodio, quereis que lo reproduzca por el minuto que lo dejo *</that>
+<template>
+    <think>
+        <condition name = "listacoincidentes">
+            <li value = "$">
+                <set var = "solucion">No teneis ninguna serie mas en la que coincidais, continua la reproduccion de <get name = "reproduciendo"/></set>
+            </li>
+
+            <li>
+                <set name = "posible"><srai>TOP <get name = "listacoincidentes"/></srai></set>
+                <set name = "listacoincidentes"><srai>REMAIN <get name = "listacoincidentes"/></srai></set>
+                <set var = "capitulo"><srai>SELECTITEM 1 IN <map><name><get name = "usuario"/></name><get name = "posible"/></map></srai></set>
+                <set var = "durcap"><srai>SELECTITEM 2 IN <map><name><get name = "posible"/></name><get var = "capitulo"/></map></srai></set>
+                <set var = "capitulo"><srai>deletrea <get var = "capitulo"/></srai></set>
+                <set name = "episodio"><srai>SELECTITEM 4 IN <get var = "capitulo"/></srai></set>
+                <set name = "temporada"><srai>SELECTITEM 2 IN <get var = "capitulo"/></srai></set>
+                <set var = "minutousuario"><srai>SELECTITEM 2 IN <map><name><get name = "usuario"/></name><get name = "posible"/></map></srai></set>
+                <set var = "minutootro"><srai>SELECTITEM 2 IN <map><name><get name = "otro"/></name><get name = "posible"/></map></srai></set>
+                <set var = "comparacion"><srai><get var = "minutousuario"/> es mayor que <get var = "minutootro"/> siendo el maximo <get var = "durcap"/></srai></set>
+
+                <condition var = "comparacion">
+                    <li value = "si">
+                        <set name = "minuto"><get var = "minutootro"/></set>
+                        <set name = "minimo"><get name = "otro"/></set>
+                    </li>
+
+                    <li value = "no">
+                        <set name = "minutootro"><get var = "minutousuario"/></set>
+                        <set name = "minimo"><get name = "usuario"/></set>
+                    </li>
+                </condition>
+
+                <set var = "solucion">El capitulo <get name = "episodio"/> de la temporada <get name = "temporada"/> de <get name = "posible"/> lo llevais por el mismo episodio, quereis que lo reproduzca por el minuto que lo dejo <get name = "minimo"/>?</set>
+            </li>
+        </condition>
+    </think>
+    <get var = "solucion"/>
+</template>
+</category>
+
+<category>
+<pattern>Ha llegado *</pattern>
+<template>Ese usuario no esta registrado en el sistema</template>
+</category>
+
+</aiml>

@@ -1,0 +1,7 @@
+serie:juego de tronos
+plataforma:HBO
+genero:drama fantasia
+sinopsis:La historia se desarrolla en un mundo ficticio de caracter medieval donde hay Siete Reinos
+idiomas:espanol ingles
+subtitulos:espanol ingles
+pagina web:no se sabe

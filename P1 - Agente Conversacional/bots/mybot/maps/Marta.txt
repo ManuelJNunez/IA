@@ -1,0 +1,2 @@
+narcos:s1e1 10 espanol espanol
+juego de tronos:s1e1 10 espanol espanol

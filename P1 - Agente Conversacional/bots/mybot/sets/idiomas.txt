@@ -1,0 +1,17 @@
+ingles
+espanol
+portugues
+italiano
+frances
+chino
+japones
+arabe
+rumano
+indio
+ruso
+aleman
+turco
+sueco
+noruego
+polaco
+danes

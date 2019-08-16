@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<aiml version="2.0">
+
+<category>
+<pattern>SEPARA PALABRAS *</pattern>
+<template>
+    <think>
+        <set var = "listaidiomas"><star/></set>
+        <set var = "item">
+            <srai>TOP <get var = "listaidiomas"/></srai>
+        </set>
+        <set name = "newlist"></set>
+
+        <condition var ="item">
+            <li value = "y">
+                <set name="newlist">
+                    <get name="newlist"/> <srai>SELECTITEM 2 IN <get var = "listaidiomas"/></srai>
+                </set>
+            </li>
+
+            <li value = "e">
+                <set name="newlist">
+                    <get name="newlist"/> <srai>SELECTITEM 2 IN <get var = "listaidiomas"/></srai>
+                </set>
+            </li>
+
+            <li>
+                <set name="newlist">
+                    <condition name ="newlist"><li value = "unknown"></li><li><get name="newlist"/></li></condition> <get var="item"/>
+                </set>
+                <set var = "listaidiomas">
+                    <srai>REMAIN <get var = "listaidiomas"/></srai>
+                </set>
+                <set var = "item">
+                    <srai>TOP <get var = "listaidiomas"/></srai>
+                </set>
+                <loop/>
+            </li>
+        </condition>
+    </think>
+</template>
+</category>
+
+<category>
+<pattern>genera salida de la lista de ^ de la serie <set>series</set></pattern>
+<template>
+    <think>
+    <set var = "idiomas"><map><name><star index = "2"/></name><star index = "1"/></map></set>
+    <set var = "npalabras"><srai>count <get var = "idiomas"/></srai></set>
+    </think>
+
+    <condition var = "npalabras">
+        <li value = "1">
+            <think>
+            <set var = "salida"><condition var = "salida"><li value = "unknown"></li><li><get var = "salida"/> y </li></condition><get var = "idiomas"/></set>
+            </think>
+        </li>
+
+        <li>
+            <think>
+            <set var = "npalabras"><map name = "predecessor"><get var = "npalabras"/></map></set>
+            <condition var = "salida">
+                <li value = "unknown">
+                    <set var = "salida"><srai>TOP <get var = "idiomas"/></srai></set>
+                </li>
+
+                <li>
+                    <set var = "salida"><get var = "salida"/> <srai>TOP <get var = "idiomas"/></srai></set>
+                </li>
+            </condition>
+            <set var = "idiomas"><srai>REMAIN <get var = "idiomas"/></srai></set>
+            </think>
+            <loop/>
+        </li>
+    </condition>
+    <get var = "salida"/>
+</template>
+</category>
+
+<category>
+<pattern>* es mayor que * siendo el maximo *</pattern>
+<template>
+    <think>
+        <set var = "loes">si</set>
+        <set var = "numero1"><star index = "1"/></set>
+
+        <condition var = "numero1">
+            <li><value><star index = "3"/></value></li>
+
+            <li><value><star index = "2"/></value>
+                <set var = "loes">no</set>
+            </li>
+
+            <li>
+                <set var = "numero1"><map name = "successor"><get var = "numero1"/></map></set>
+                <loop/>
+            </li>
+
+        </condition>
+    </think>
+    <get var = "loes"/>
+</template>
+</category>
+</aiml>

@@ -1,0 +1,14 @@
+serie:vikingos
+plataforma:netflix
+genero:Drama historico
+sinopsis:Esta basada en los relatos semilegendarios de Ragnar Lodbrok, reconocido como uno de los primeros reyes de Suecia y Dinamarca, durante el siglo VIII
+idiomas:ingles espanol italiano portugues
+subtitulos:ingles espanol italiano arabe rumano
+pagina web:netflix com/title/70301870
+s1e1:Ritos_de_paso 46
+s2e1:Guerra_de_hermanos 48
+s1e2:La_ira_de_los_hombres_del_norte 47
+s2e2:Invasion 46
+s1e3:Despojados 45
+s1e4:Juicio 45
+s1e5:La_batida 44

@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<aiml version="2.0">
+
+<category>
+<pattern>De que <set>va</set> (la serie) <set>series</set></pattern>
+<template><map><name><star index = "2"/></name>sinopsis</map></template>
+</category>
+
+<category>
+<pattern>De que <set>va</set> (la serie) *</pattern>
+<template><think><set name="serie"><star index = "2"/></set></think>La serie <get name = "serie"/> no esta en el catalogo quieres anadirla?</template>
+</category>
+
+<category>
+<pattern><set>afirmativo</set> ^</pattern>
+<that>La serie * no esta en el catalogo quieres anadirla</that>
+<template><addtoset><name>series</name><key><get name = "serie"/></key></addtoset>Debes de crear en la carpeta maps un archivo llamado "<get name = "serie"/>.txt". Cuando lo hayas hecho reiniciame y al volver pideme qe anada la serie <get name = "serie"/></template>
+</category>
+
+<category>
+<pattern>Anade la serie *</pattern>
+<template>
+    <addtomap>
+        <name><star/></name>
+        <key>serie</key>
+        <value><star/></value>
+    </addtomap>
+    <think>
+        <set var="titulo"><map><name><star/></name>serie</map></set>
+    </think>
+    <condition var = "titulo">
+        <li value = "unknown"><addtoset><name>series</name><key><star/></key></addtoset>Debes de crear en la carpeta maps un archivo llamado "<star/>.txt". Cuando lo hayas hecho reiniciame y al volver pideme qe anada la serie <star/></li>
+        <li>Perfecto, te voy a preguntar datos sobre la serie <set name = "serie"><star/></set> Indicame que plataforma la ofrece</li>
+    </condition>
+</template>
+</category>
+
+<category>
+<pattern>*</pattern>
+<that>Perfecto, te voy a preguntar datos sobre la serie * Indicame que plataforma la ofrece</that>
+<template><addtomap><name><get name = "serie"/></name><key>plataforma</key><value><star/></value></addtomap>A que genero pertenece?</template>
+</category>
+
+<category>
+<pattern>*</pattern>
+<that>A que genero pertenece</that>
+<template><addtomap><name><get name = "serie"/></name><key>genero</key><value><star/></value></addtomap>De que va la serie?</template>
+</category>
+
+<category>
+<pattern>*</pattern>
+<that>De que va la serie</that>
+<template><addtomap><name><get name = "serie"/></name><key>sinopsis</key><value><star/></value></addtomap>Dime la lista de idiomas en la que esta disponible la serie</template>
+</category>
+
+<category>
+<pattern>*</pattern>
+<that>Dime la lista de idiomas en la que esta disponible la serie</that>
+<template>
+    <srai>SEPARA PALABRAS <star/></srai><addtomap><name><get name = "serie"/></name><key>idiomas</key><value><get name = "newlist"/></value></addtomap>
+    Dime la lista de subtitulos en la que esta disponible la serie
+</template>
+</category>
+
+<category>
+<pattern>*</pattern>
+<that>Dime la lista de subtitulos en la que esta disponible la serie</that>
+<template>
+    <srai>SEPARA PALABRAS <star/></srai><addtomap><name><get name = "serie"/></name><key>subtitulos</key><value><get name = "newlist"/></value></addtomap>
+    Dime su direccion web
+</template>
+</category>
+
+<category>
+<pattern>*</pattern>
+<that>Dime su direccion web</that>
+<template>
+    <addtomap><name><get name = "serie"/></name><key>Pagina web</key><value><star/></value></addtomap>Ya he creado la informacion basica de la serie, si quieres anadir capitulos me lo dices
+</template>
+</category>
+
+<category>
+<pattern><set>introduce</set> un (nuevo) [capitulo episodio] [de a] la temporada <set>number</set> de <set>series</set></pattern>
+<template>
+    <think>
+        <set name = "serie"><star index = "3"/></set>
+        <set name = "temporada"><star index = "2"/></set>
+    </think>
+    Dime el titulo del capitulo
+</template>
+</category>
+
+<category>
+<pattern>*</pattern>
+<that>Dime el titulo del capitulo</that>
+<template>
+    <think>
+        <set var = "iterador">1</set>
+        <set name = "titulo"><star/></set>
+        <set name = "indice">s<get name = "temporada"/>e<get var = "iterador"/></set>
+        <set var = "dato"><map><name><get name = "serie"/></name><get name = "indice"/></map></set>
+        <set var = "dato"><srai>selectitem 1 in <get var = "dato"/></srai></set>
+        <set var = "dato"><srai>decode <get var = "dato"/></srai></set>
+    </think>
+        <condition var = "dato">
+            <li value = "unknown">
+                Dime la duracion del capitulo
+            </li>
+
+            <li><value><get name = "titulo"/></value>
+                Ese capitulo ya esta registrado
+            </li>
+
+            <li>
+                <think>
+                <set var = "iterador"><map name= "successor"><get var = "iterador"/></map></set>
+                <set name = "indice">s<get name = "temporada"/>e<get var = "iterador"/></set>
+                <set var = "dato"><map><name><get name = "serie"/></name><get name = "indice"/></map></set>
+                <set var = "dato"><srai>selectitem 1 in <get var = "dato"/></srai></set>
+                <set var = "dato"><srai>decode <get var = "dato"/></srai></set>
+                </think>
+                <loop/>
+            </li>
+        </condition>
+</template>
+</category>
+
+<category>
+<pattern><set>introduce</set> un (nuevo) [capitulo episodio] [de a] la temporada <set>number</set> de *</pattern>
+<template>La serie <set name ="serie"><star index = "3"/></set> no esta en el catalogo quieres anadirla</template>
+</category>
+
+<category>
+<pattern>*</pattern>
+<that>Dime la duracion del capitulo</that>
+<template>
+    <addtomap>
+        <name><get name = "serie"/></name>
+        <key><get name = "indice"/></key>
+        <value><srai>code <get name = "titulo"/></srai> <star/></value>
+    </addtomap>
+    Capitulo anadido con exito
+</template>
+</category>
+
+</aiml>

@@ -1,0 +1,21 @@
+serie:narcos
+Plataforma: Netflix
+Genero: drama, crimen, biografia
+idiomas:espanol ingles
+Subtitulos:espanol ingles
+Sinopsis: Narcos es una serie de ficcion historica basada en la lucha contra el narcotrafico en Colombia durante los anos 1990.
+Pagina web: www.netflix.com/es-en/title/80025172
+s1e1:Descenso 57 
+s1e2:La_espada_de_simon_bolivar 47
+s1e3:Los_hombres_de_siempre 47 
+s1e4:El_palacio_en_llamas 44 
+s1e5:Habra_futuro 55
+s1e6:Explosivos 50
+s1e7:Lloraras_lagrimas_de_sangre 51
+s1e8:La_gran_mentira 51 
+s1e9:La_catedral 51 
+s1e10:Despegue 45
+s2e1:Por_fin_libre 53
+s2e2:Cambalache 47 
+s2e3:Nuestro_hombre_en_madrid 47 
+s2e4El_bueno_el_malo_y_el_muerto 56

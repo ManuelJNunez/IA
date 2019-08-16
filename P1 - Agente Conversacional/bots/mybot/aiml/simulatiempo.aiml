@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<aiml version="2.0">
+	<!-- File: simulatiempo.aiml -->
+	<!-- Author: Raul -->
+	<!-- Last modified: January 30, 2019 -->
+
+
+
+<!-- Hace avanzar el tiempo actual tantos minutos como indica el argumento -->
+<category>
+<pattern> SIMUL <set>number</set> </pattern>
+<template>
+    <think>
+      <set var = "clavecap"><srai>SELECTITEM 1 IN <map><name><get name = "usuario"/></name><get name = "reproduciendo"/></map></srai></set>
+    <set name = "tiempo"><srai>SELECTITEM 2 IN <map><name><get name = "usuario"/></name><get name = "reproduciendo"/></map></srai></set>
+    <set var = "durcap"><srai>SELECTITEM 2 IN <map><name><get name = "reproduciendo"/></name><get var = "clavecap"/></map></srai></set>
+     <condition name="tiempototal">
+  	<li value="unknown"> <set name="tiempototal">0</set></li>
+     </condition>
+     <set var="indice">0</set>
+   <!-- Ciclo que va incrementando el tiempo de minuto en minuto -->
+   <condition var="indice">
+      <!-- Opcion de salida del ciclo: cuando indice valga el valor del tiempo indicado en SIMUL -->
+      <li> <value><star index="1"/></value></li>
+      <!-- Cuerpo del bucle -->
+      <li>
+         <condition name = "pausado"><li value = "1"></li><li><set name="tiempo"><map name="successor"><get name="tiempo"/></map></set></li></condition>
+         <set name="tiempototal"><map name="successor"><get name="tiempototal"/></map></set>
+         <condition name = "tiempo"><li><value><get var = "durcap"/></value><set var = "acabado">1</set></li></condition>
+         <set var="indice"><map name="successor"><get var="indice"/></map></set>
+        <loop/>
+      </li>
+   </condition>
+      <set var = "idioma"><srai>SELECTITEM 3 IN <map><name><get name = "usuario"/></name><get name = "reproduciendo"/></map></srai></set>
+      <set var = "subtitulos"><srai>SELECTITEM 4 IN <map><name><get name = "usuario"/></name><get name = "reproduciendo"/></map></srai></set>
+
+    <condition name = "estanjuntos">
+      <li value = "si">
+        <modifymap>
+          <name><get name = "otro"/></name>
+          <key><get name = "reproduciendo"/></key>
+          <value><get var = "clavecap"/> <condition var = "acabado"><li value = "1"><get var = "durcap"/></li><li><get name = "tiempo"/></li></condition> <get var = "idioma"/> <get var = "subtitulos"/></value>
+        </modifymap>
+      </li>
+    </condition>
+
+      <modifymap>
+        <name><get name = "usuario"/></name>
+        <key><get name = "reproduciendo"/></key>
+        <value><get var = "clavecap"/> <condition var = "acabado"><li value = "1"><get var = "durcap"/></li><li><get name = "tiempo"/></li></condition> <get var = "idioma"/> <get var = "subtitulos"/></value>
+      </modifymap>
+   </think>
+El tiempo total transcurrido es de <get name = "tiempototal"/> minutos <condition name = "reproduciendo"><li value = "unknown"></li><li>Capitulo en reproduccion <condition var = "acabado"><li value = "1">terminado</li><li>va por el minuto <srai>SELECTITEM 2 IN <map><name><get name = "usuario"/></name><get name = "reproduciendo"/></map></srai></li></condition></li></condition>
+</template>
+</category>
+
+
+<!-- Una variante de la accion SIMUL para incluir algo como SIMUL 10 minutos -->
+<category>
+<pattern> SIMUL <set>number</set> ^ </pattern>
+<template>
+      <srai>SIMUL <star index="1"/></srai>
+</template>
+</category>
+
+
+
+<!-- Detectar un uso incorrecto del comando SIMUL -->
+<category>
+<pattern> SIMUL * </pattern>
+<template>
+El parametro que se le pasa a SIMUL debe ser un numero
+</template>
+</category>
+
+
+</aiml>
